@@ -7,7 +7,7 @@ const Search = ({ search, setSearch }) => {
       <img src="./search.svg" alt="search icon" />
       <input
         type="text"
-        placeholder="Search your trending movies..."
+        placeholder="Search your favourite movies..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
