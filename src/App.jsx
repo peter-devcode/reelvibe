@@ -3,13 +3,26 @@ import Search from "./components/Search";
 import { fetchData } from "./utils/fetchData";
 import MovieCard from "./components/MovieCard";
 import { useDebounce } from "use-debounce";
+import { getTrendingMovies } from "./utils/getTrendingMovies";
 
 const App = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearch] = useDebounce(searchTerm, 1000); 
+  const [debouncedSearch] = useDebounce(searchTerm, 1000);
   const [movies, setMovies] = useState([]);
+  const [trendingMovies, setTrendingMovies] = useState([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const loadTrendingMovies = async () => {
+    try {
+      const movies = await getTrendingMovies();
+      setTrendingMovies(movies);
+
+      return movies;
+    } catch (error) {
+      console.error("Failed to load trending movies:", error);
+    }
+  };
 
   useEffect(() => {
     const loadMovies = async () => {
@@ -27,6 +40,10 @@ const App = () => {
     loadMovies();
   }, [debouncedSearch]);
 
+  useEffect(() => {
+    loadTrendingMovies();
+  }, []);
+
   return (
     <>
       <header>
@@ -39,7 +56,21 @@ const App = () => {
         <section id="search">
           <Search search={searchTerm} setSearch={setSearchTerm} />
         </section>
-        <section id="trending">Trending</section>
+        {trendingMovies.length > 0 && (
+          <section id="trending">
+            <h2>Trending Movies</h2>
+
+            <ul>
+              {trendingMovies.map((movie, index) => (
+                <li key={movie.$id}>
+                  <p>{index + 1}</p>
+
+                  <img src={movie.poster_path} alt={movie.searchTerm} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
         <section id="all-movie">
           <h2>All Movies</h2>
           {isLoading ? (
@@ -49,10 +80,7 @@ const App = () => {
           ) : (
             <ul>
               {movies.map((movie) => (
-                <MovieCard
-                key={movie.id}
-                movie={movie}
-                />
+                <MovieCard key={movie.id} movie={movie} />
               ))}
             </ul>
           )}
