@@ -2,9 +2,11 @@ import React, { useEffect, useState } from "react";
 import Search from "./components/Search";
 import { fetchData } from "./utils/fetchData";
 import MovieCard from "./components/MovieCard";
+import { useDebounce } from "use-debounce";
 
 const App = () => {
-  const [search, setSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch] = useDebounce(searchTerm, 1000); 
   const [movies, setMovies] = useState([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -13,7 +15,7 @@ const App = () => {
     const loadMovies = async () => {
       setIsLoading(true);
       try {
-        const movies = await fetchData();
+        const movies = await fetchData(debouncedSearch);
         setMovies(movies);
       } catch (error) {
         console.error("Failed to load movies:", error);
@@ -23,7 +25,7 @@ const App = () => {
     };
 
     loadMovies();
-  }, []);
+  }, [debouncedSearch]);
 
   return (
     <>
@@ -35,7 +37,7 @@ const App = () => {
 
       <main>
         <section id="search">
-          <Search search={search} setSearch={setSearch} />
+          <Search search={searchTerm} setSearch={setSearchTerm} />
         </section>
         <section id="trending">Trending</section>
         <section id="all-movie">
